@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PlayRush Ludo</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:12px;background:#0c0b19;color:#fff;font-family:system-ui,-apple-system,sans-serif}main{max-width:780px;margin:auto}.head{font-size:1.45rem;font-weight:900;margin:4px 0 12px}.head span{color:#b9a0ff}.layout{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:12px}.board{display:grid;grid-template-columns:repeat(15,minmax(0,1fr));grid-template-rows:repeat(15,minmax(0,1fr));aspect-ratio:1;background:#fff;border:3px solid #fff;border-radius:9px;overflow:hidden;position:relative}.cell{position:relative;z-index:1;border:1px solid #d5d5df;display:grid;place-items:center;min-width:0;min-height:0}.base{position:relative;z-index:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:8%;padding:12%;border:1px solid #ddd}.base.red{background:#ef4444}.base.green{background:#22c55e}.base.yellow{background:#facc15}.base.blue{background:#3b82f6}.home{background:#fff;border-radius:50%;border:3px solid #ffffffaa}.safe{background:#eee7ff}.lane-red{background:#ef4444}.lane-green{background:#22c55e}.lane-yellow{background:#facc15}.lane-blue{background:#3b82f6}.star{color:#6d28d9;font-size:clamp(7px,1.5vw,12px)}.piece{position:absolute;z-index:4;width:82%;height:82%;padding:0;border:2px solid white;border-radius:50%;font-weight:900;color:#171629;box-shadow:0 1px 4px #0008;font-size:clamp(9px,2vw,15px);display:grid;place-items:center}.piece.red{background:#ef4444}.piece.green{background:#22c55e}.piece.yellow{background:#facc15}.piece.blue{background:#3b82f6}.piece.can{outline:3px solid #8b5cf6;outline-offset:1px;cursor:pointer;animation:pulse .8s infinite alternate}@keyframes pulse{to{transform:scale(1.12)}}.side{background:#19172a;border:1px solid #39364f;border-radius:14px;padding:12px}.side h2{margin:0 0 10px;font-size:1.1rem}.turn{border:1px solid #39364f;border-radius:10px;padding:9px;display:flex;gap:8px;align-items:center}.dot{width:13px;height:13px;border-radius:50%;flex:none}.muted{font-size:.82rem;color:#c4bfd9;line-height:1.4}.dice{display:grid;place-items:center;background:white;color:#171629;border-radius:12px;width:70px;height:70px;margin:14px auto 10px;font-size:2.5rem;line-height:1}.btn{width:100%;padding:12px;border:0;border-radius:10px;background:linear-gradient(100deg,#9b7cff,#ec4899);color:white;font-weight:900;font-size:1rem}.btn:disabled{opacity:.45}.msg{margin:10px 0;padding:10px;border:1px solid #39364f;border-radius:10px;min-height:58px;font-size:.85rem}.teams{display:grid;grid-template-columns:1fr 1fr;gap:7px}.team{border:1px solid #39364f;border-radius:8px;padding:8px;font-size:.78rem;line-height:1.5}.team strong{display:block;margin-bottom:3px}.swatches{display:flex;gap:5px}.swatch{width:12px;height:12px;border-radius:50%;display:inline-block}.reset{width:100%;margin-top:8px;padding:9px;border-radius:9px;background:#ffffff0b;border:1px solid #39364f;color:white}.foot{margin-top:10px}.pips{width:100%;height:100%;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:13%;gap:4%}.pip{background:#171629;border-radius:50%;visibility:hidden}.pip.on{visibility:visible}.win{font-weight:800;color:#facc15}@media(max-width:620px){.layout{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr;gap:8px}.side h2,.turn,.msg,.teams,.reset,.foot{grid-column:1/-1}.dice{margin:0 auto 8px}}
+</style>
+</head>
+<body><main>
+<div class="head">⚡ Play<span>Rush</span> Ludo</div>
+<div class="layout"><div id="board" class="board" aria-label="Ludo board"></div>
+<aside class="side">
+<h2>Play against the computer</h2>
+<div class="turn"><span id="dot" class="dot" style="background:#ef4444"></span><div><b id="turn">Your turn · Red</b><div id="hint" class="muted">Roll the dice to begin.</div></div></div>
+<div><div id="dice" class="dice" aria-label="Dice">⚄</div><button id="roll" class="btn">🎲 Roll dice</button></div>
+<div id="msg" class="msg" aria-live="polite">You play Red + Yellow. Computer plays Green + Blue. Roll the dice!</div>
+<div id="teams" class="teams"></div>
+<button id="reset" class="reset">↻ Restart game</button>
+<div class="foot muted">Standard-style team play: roll a 6 to leave base, tap a highlighted token, capture on non-safe squares, and reach home with an exact roll. A six earns another roll. After a team wins, start the next game to swap sides.</div>
+</aside></div></main>
+<script>
+(()=>{
+const C=['red','green','yellow','blue'],N={red:'Red',green:'Green',yellow:'Yellow',blue:'Blue'},H={red:'#ef4444',green:'#22c55e',yellow:'#facc15',blue:'#3b82f6'};
+const T=[[6,1],[6,2],[6,3],[6,4],[6,5],[5,6],[4,6],[3,6],[2,6],[1,6],[0,6],[0,7],[0,8],[1,8],[2,8],[3,8],[4,8],[5,8],[6,9],[6,10],[6,11],[6,12],[6,13],[6,14],[7,14],[8,14],[8,13],[8,12],[8,11],[8,10],[8,9],[9,8],[10,8],[11,8],[12,8],[13,8],[14,8],[14,7],[14,6],[13,6],[12,6],[11,6],[10,6],[9,6],[8,5],[8,4],[8,3],[8,2],[8,1],[8,0],[7,0],[6,0]];
+const S={red:0,green:13,yellow:26,blue:39},L={red:[[7,1],[7,2],[7,3],[7,4],[7,5],[7,6]],green:[[1,7],[2,7],[3,7],[4,7],[5,7],[6,7]],yellow:[[7,13],[7,12],[7,11],[7,10],[7,9],[7,8]],blue:[[13,7],[12,7],[11,7],[10,7],[9,7],[8,7]]};
+const B={red:[0,0],green:[0,9],blue:[9,0],yellow:[9,9]},SAFE=new Set([0,8,13,21,26,34,39,47]);
+const PIPS={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+let g,swap=false,computerTimer=null;
+function playerColors(){return swap?['green','blue']:['red','yellow']}
+function cpuColors(){return swap?['red','yellow']:['green','blue']}
+function isHuman(c){return playerColors().includes(c)}
+function fresh(){return{turn:0,dice:null,pick:false,over:false,tok:Object.fromEntries(C.map(c=>[c,[-1,-1,-1,-1]])),valid:[]}}
+function cell(r,c){return document.querySelector('#board .cell[data-r="'+r+'"][data-c="'+c+'"]')}
+function build(){let b=document.getElementById('board');b.innerHTML='';for(let r=0;r<15;r++)for(let c=0;c<15;c++){let e=document.createElement('div');e.className='cell';e.dataset.r=r;e.dataset.c=c;b.append(e)}
+C.forEach(c=>{let [r,x]=B[c],e=document.createElement('div');e.className='base '+c;e.style.gridRow=(r+1)+' / span 6';e.style.gridColumn=(x+1)+' / span 6';for(let i=0;i<4;i++){let h=document.createElement('div');h.className='home';e.append(h)}b.append(e)});
+T.forEach(([r,c],i)=>{let e=cell(r,c);if(SAFE.has(i)){e.classList.add('safe');e.textContent='★'}});
+C.forEach(c=>{let [r,x]=T[S[c]];cell(r,x).classList.add('lane-'+c);L[c].forEach(([a,b])=>cell(a,b).classList.add('lane-'+c))});
+let mid=document.createElement('div');mid.style.gridRow='7 / span 3';mid.style.gridColumn='7 / span 3';mid.style.background='conic-gradient(#22c55e 0 25%,#facc15 0 50%,#3b82f6 0 75%,#ef4444 0)';mid.style.border='2px solid white';b.append(mid);draw()}
+function home(c,i){let[r,x]=B[c],q=[[1,1],[1,4],[4,1],[4,4]][i];return[r+q[0],x+q[1]]}
+function pos(c,p,i){return p===-1?home(c,i):p>=52?L[c][Math.min(5,p-52)]:T[(S[c]+p)%52]}
+function pipFace(n){let d=document.createElement('div');d.className='pips';for(let i=0;i<9;i++){let p=document.createElement('i');p.className='pip'+(PIPS[n].includes(i)?' on':'');d.append(p)}return d}
+function draw(){document.querySelectorAll('.piece').forEach(e=>e.remove());C.forEach(c=>g.tok[c].forEach((p,i)=>{let[r,x]=pos(c,p,i),e=cell(r,x);if(!e)return;let q=document.createElement('button');q.className='piece '+c+(g.valid.some(v=>v.c===c&&v.i===i)?' can':'');q.setAttribute('aria-label',N[c]+' token '+(i+1));q.textContent='';if(g.valid.some(v=>v.c===c&&v.i===i))q.textContent='✓';q.onclick=()=>move(c,i);e.append(q)}));hud()}
+function hud(){let c=C[g.turn],human=isHuman(c);document.getElementById('turn').textContent=g.over?'Game finished':(human?'Your turn · ':'Computer · ')+N[c];document.getElementById('dot').style.background=H[c];document.getElementById('hint').textContent=g.over?'A team has won. Start the next game.':g.pick?'Tap one of the glowing tokens.':human?'Roll the dice.':'Computer is taking its turn…';let die=document.getElementById('dice');die.innerHTML='';if(g.dice===null)die.textContent='⚄';else die.append(pipFace(g.dice));document.getElementById('roll').disabled=g.over||g.pick||!human;let box=document.getElementById('teams');box.innerHTML='';[[playerColors(),'YOU'],[cpuColors(),'COMPUTER']].forEach(([cols,label])=>{let e=document.createElement('div');e.className='team';e.innerHTML='<strong>'+label+'</strong><span class="swatches">'+cols.map(k=>'<i class="swatch" style="background:'+H[k]+'"></i>').join(' ')+'</span><br>'+cols.map(k=>N[k]+': '+g.tok[k].filter(v=>v===57).length+'/4 home').join('<br>');box.append(e)})}
+function say(t){document.getElementById('msg').textContent=t}
+function next(){g.turn=(g.turn+1)%4;g.dice=null;g.pick=false;g.valid=[]}
+function legal(c){let a=[];g.tok[c].forEach((p,i)=>{if((p===-1&&g.dice===6)||(p>=0&&p<57&&p+g.dice<=57))a.push({c,i})});return a}
+function roll(){if(g.over||g.pick)return;let c=C[g.turn];g.dice=1+Math.floor(Math.random()*6);g.valid=legal(c);if(!g.valid.length){let six=g.dice===6;say((isHuman(c)?'You':'Computer')+' rolled '+g.dice+'. No legal move.');g.dice=null;if(!six)next();draw();if(!g.over&&!isHuman(C[g.turn]))scheduleCPU();return}g.pick=true;say((isHuman(c)?'You':'Computer')+' rolled '+g.dice+'. '+(isHuman(c)?'Choose a glowing token.':'Computer is choosing a move…'));draw();if(!isHuman(c))scheduleCPU()}
+function scheduleCPU(){clearTimeout(computerTimer);computerTimer=setTimeout(()=>{if(g.over||!g.pick||isHuman(C[g.turn]))return;let c=C[g.turn],choices=g.valid.slice().sort((a,b)=>score(b)-score(a));move(choices[0].c,choices[0].i)},850)}
+function score(v){let p=g.tok[v.c][v.i],dest=p===-1?0:p+g.dice,sc=Math.random()*2;if(p===-1)sc+=20;if(dest>=57)sc+=100;if(dest>=52)sc+=30;if(dest<52){let sq=(S[v.c]+dest)%52;if(!SAFE.has(sq))C.filter(k=>k!==v.c).forEach(k=>g.tok[k].forEach(op=>{if(op>=0&&op<52&&(S[k]+op)%52===sq)sc+=60}))}return sc+dest*.15}
+function move(c,i){if(!g.pick||c!==C[g.turn]||!g.valid.some(v=>v.c===c&&v.i===i))return;let p=g.tok[c][i];p=p===-1?0:p+g.dice;g.tok[c][i]=p;let hit=0;if(p<52){let a=(S[c]+p)%52;if(!SAFE.has(a))C.filter(k=>k!==c).forEach(k=>g.tok[k].forEach((op,j)=>{if(op>=0&&op<52&&(S[k]+op)%52===a){g.tok[k][j]=-1;hit++}}))}let six=g.dice===6;g.dice=null;g.pick=false;g.valid=[];let humans=playerColors().every(k=>g.tok[k].every(v=>v===57)),cpus=cpuColors().every(k=>g.tok[k].every(v=>v===57));if(humans||cpus){g.over=true;say((humans?'You win!':'Computer wins!')+' All eight team tokens reached home. Press “Next game” to swap colours.');document.getElementById('reset').textContent='Next game · swap colours';}else{say((isHuman(c)?'You moved ':'Computer moved ')+N[c]+' token'+(hit?' and captured '+hit+' opponent token(s)':'')+'. '+(six?'Six! Same colour plays again.':'Next colour’s turn.'));if(!six)next()}draw();if(!g.over&&!isHuman(C[g.turn]))scheduleCPU()}
+document.getElementById('roll').onclick=roll;
+document.getElementById('reset').onclick=()=>{clearTimeout(computerTimer);if(g.over)swap=!swap;g=fresh();document.getElementById('reset').textContent='↻ Restart game';say('New game! '+(swap?'You play Green + Blue. Computer plays Red + Yellow.':'You play Red + Yellow. Computer plays Green + Blue.')+' Roll the dice!');draw()};
+g=fresh();build();say('You play Red + Yellow. Computer plays Green + Blue. Roll the dice!');
+})();
+</script></body></html>
