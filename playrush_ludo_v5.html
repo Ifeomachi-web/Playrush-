@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>PlayRush Ludo — Test 3</title>
+<style>
+:root{--bg:#0d0b19;--panel:#19172a;--line:#c9cbd3;--red:#ef4444;--green:#22c55e;--yellow:#facc15;--blue:#3b82f6}
+*{box-sizing:border-box}body{margin:0;padding:14px;background:var(--bg);color:#fff;font-family:system-ui,-apple-system,Arial,sans-serif}
+main{max-width:760px;margin:auto}.brand{font-size:clamp(25px,6vw,34px);font-weight:900;margin:4px 0 14px}.brand span{color:#b69aff}
+.game{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:14px;align-items:start}
+.board-wrap{background:#fff;border:3px solid #fff;border-radius:12px;overflow:hidden;box-shadow:0 8px 25px #0005}
+svg{display:block;width:100%;height:auto;aspect-ratio:1}
+.cell{stroke:#c9cbd3;stroke-width:1.5}.track{fill:#fff}.safe{fill:#f1eaff}.base-red{fill:var(--red)}.base-green{fill:var(--green)}.base-yellow{fill:var(--yellow)}.base-blue{fill:var(--blue)}
+.home-pad{fill:#fff;stroke:#fff;stroke-width:3}.lane-red{fill:var(--red)}.lane-green{fill:var(--green)}.lane-yellow{fill:var(--yellow)}.lane-blue{fill:var(--blue)}
+.center{stroke:#fff;stroke-width:2}.star{font-size:19px;fill:#8b5cf6;text-anchor:middle;dominant-baseline:central}
+.token{stroke:#fff;stroke-width:3;filter:drop-shadow(0 2px 2px #0006);cursor:pointer;transition:cx .13s linear,cy .13s linear}.token:focus{outline:none;stroke:#171329;stroke-width:5}.token.valid{stroke:#fff;stroke-width:6;filter:drop-shadow(0 0 5px #8b5cf6);animation:glow .65s infinite alternate}
+@keyframes glow{to{stroke:#8b5cf6;stroke-width:9}}
+.panel{background:var(--panel);border:1px solid #39364f;border-radius:16px;padding:14px}.panel h2{font-size:19px;margin:0 0 12px}
+.turnbox{border:1px solid #49445f;border-radius:12px;padding:12px;display:flex;gap:10px;align-items:center}.dot{width:15px;height:15px;border-radius:50%;flex:none}.turntitle{font-weight:850}.sub{font-size:13px;color:#c8c3d9;line-height:1.4;margin-top:3px}
+.clockrow{display:flex;align-items:center;justify-content:space-between;margin:12px 2px 6px;font-size:13px;color:#d6d1e5}.clock{font-weight:900;font-variant-numeric:tabular-nums}.clock.low{color:#ff7777}
+.dicebox{display:grid;place-items:center;margin:10px auto 12px}.dice-stage{perspective:500px;display:grid;place-items:center;width:110px;height:110px}.die{width:88px;height:88px;background:linear-gradient(145deg,#fff,#f2f2f6);border-radius:17px;box-shadow:inset -3px -4px 8px #d8d8e0,inset 3px 3px 7px #fff,0 7px 13px #0005;padding:0;display:grid;place-items:center;transform-style:preserve-3d;transform:rotateX(-8deg) rotateY(8deg)}.die svg{display:block;width:100%;height:100%;filter:drop-shadow(0 1px 0 #ddd)}.die.rolling{animation:roll3d .16s linear infinite}@keyframes roll3d{0%{transform:rotateX(0deg) rotateY(0deg) rotateZ(0deg) translateY(0)}25%{transform:rotateX(90deg) rotateY(45deg) rotateZ(40deg) translateY(-5px)}50%{transform:rotateX(180deg) rotateY(110deg) rotateZ(100deg) translateY(1px)}75%{transform:rotateX(270deg) rotateY(210deg) rotateZ(220deg) translateY(-4px)}100%{transform:rotateX(360deg) rotateY(360deg) rotateZ(360deg) translateY(0)}}
+button{font:inherit}.roll{width:100%;min-height:48px;border:0;border-radius:11px;background:linear-gradient(100deg,#9875ff,#e34cae);color:#fff;font-weight:900;font-size:16px}.roll:disabled{opacity:.4}.message{min-height:62px;border:1px solid #49445f;border-radius:11px;padding:10px;margin:12px 0;font-size:13px;line-height:1.45;color:#eee}
+.teams{display:grid;grid-template-columns:1fr 1fr;gap:7px}.team{border:1px solid #49445f;border-radius:9px;padding:8px;font-size:12px;line-height:1.6}.team b{display:block;font-size:12px;margin-bottom:3px}.swatch{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:3px}
+.reset{width:100%;margin-top:10px;border:1px solid #49445f;background:#ffffff0b;color:white;border-radius:10px;padding:10px;font-weight:750}
+.legend{font-size:12px;color:#c8c3d9;line-height:1.5;margin-top:10px}
+@media(max-width:650px){.game{grid-template-columns:1fr}.panel{display:block}.board-wrap{width:100%}.panel h2{font-size:20px}.die{width:78px;height:78px}}
+</style>
+</head>
+<body><main>
+<div class="brand">⚡ Play<span>Rush</span> Ludo</div>
+<div class="game">
+<div class="board-wrap"><svg id="board" viewBox="0 0 600 600" role="img" aria-label="Four-colour Ludo board"></svg></div>
+<aside class="panel">
+<h2>Play against the computer</h2>
+<div class="turnbox"><i id="dot" class="dot" style="background:var(--red)"></i><div><div id="turntitle" class="turntitle">Your turn · Red</div><div id="hint" class="sub">Roll the dice to begin.</div></div></div>
+<div class="clockrow"><span>Turn timer</span><span id="clock" class="clock">30s</span></div>
+<div class="dicebox"><div class="dice-stage"><div id="die" class="die" aria-label="Dice showing 1"></div></div></div>
+<button id="roll" class="roll">🎲 Roll dice</button>
+<div id="message" class="message" aria-live="polite">You play Red + Yellow. Computer plays Green + Blue.</div>
+<div id="teams" class="teams"></div>
+<button id="reset" class="reset">↻ Restart game</button>
+<div class="legend">Roll a 6 to bring a token out. Tap a glowing token to move it. ★ squares are safe. A 6 gives another turn. Reach home with an exact roll. Computer moves automatically.</div>
+</aside></div></main>
+<script>
+(()=>{
+const NS='http://www.w3.org/2000/svg', names={red:'Red',green:'Green',yellow:'Yellow',blue:'Blue'}, colors={red:'#ef4444',green:'#22c55e',yellow:'#facc15',blue:'#3b82f6'};
+const order=['red','green','yellow','blue'];
+const track=[[6,1],[6,2],[6,3],[6,4],[6,5],[5,6],[4,6],[3,6],[2,6],[1,6],[0,6],[0,7],[0,8],[1,8],[2,8],[3,8],[4,8],[5,8],[6,9],[6,10],[6,11],[6,12],[6,13],[6,14],[7,14],[8,14],[8,13],[8,12],[8,11],[8,10],[8,9],[9,8],[10,8],[11,8],[12,8],[13,8],[14,8],[14,7],[14,6],[13,6],[12,6],[11,6],[10,6],[9,6],[8,5],[8,4],[8,3],[8,2],[8,1],[8,0],[7,0],[6,0]];
+const starts={red:0,green:13,yellow:26,blue:39};
+const lanes={red:[[7,1],[7,2],[7,3],[7,4],[7,5],[7,6]],green:[[1,7],[2,7],[3,7],[4,7],[5,7],[6,7]],yellow:[[7,13],[7,12],[7,11],[7,10],[7,9],[7,8]],blue:[[13,7],[12,7],[11,7],[10,7],[9,7],[8,7]]};
+const safe=new Set([0,8,13,21,26,34,39,47]), pipMap={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+const bases={red:[0,0],green:[0,9],blue:[9,0],yellow:[9,9]};
+let game,swap=false,timer=null,cpuTimer=null,seconds=30,rolling=false;
+const $=id=>document.getElementById(id), svgEl=(tag,attrs={})=>{let e=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));return e};
+const human=()=>swap?['green','blue']:['red','yellow'], cpu=()=>swap?['red','yellow']:['green','blue'], isHuman=c=>human().includes(c);
+function fresh(){return{turn:0,dice:null,choosing:false,valid:[],over:false,tokens:Object.fromEntries(order.map(c=>[c,[-1,-1,-1,-1]]))}}
+function coord(r,c){return{x:c*40+20,y:r*40+20}}
+function drawBoard(){
+ const s=$('board');s.innerHTML='';
+ // base quadrants and white token pads
+ Object.entries(bases).forEach(([c,[r,x]])=>{
+  s.append(svgEl('rect',{x:x*40,y:r*40,width:240,height:240,fill:colors[c],class:'cell'}));
+  [[1,1],[1,4],[4,1],[4,4]].forEach(([a,b])=>s.append(svgEl('circle',{cx:(x+b)*40+20,cy:(r+a)*40+20,r:18,fill:'#fff',stroke:'#e8e8ee', 'stroke-width':2})));
+ });
+ // track cells
+ track.forEach(([r,c],i)=>{let p=coord(r,c);s.append(svgEl('rect',{x:c*40,y:r*40,width:40,height:40,fill:safe.has(i)?'#f0eaff':'#fff',stroke:'#c9cbd3','stroke-width':1.5}));if(safe.has(i)){let t=svgEl('text',{x:p.x,y:p.y+1,class:'star'});t.textContent='★';s.append(t)}});
+ // coloured home lanes
+ Object.entries(lanes).forEach(([c,cells])=>cells.forEach(([r,x])=>s.append(svgEl('rect',{x:x*40,y:r*40,width:40,height:40,fill:colors[c],stroke:'#c9cbd3','stroke-width':1.5}))));
+ // start squares
+ Object.entries(starts).forEach(([c,i])=>{let [r,x]=track[i];s.append(svgEl('rect',{x:x*40,y:r*40,width:40,height:40,fill:colors[c],stroke:'#fff','stroke-width':2}))});
+ // centre home triangle quadrants
+ const cx=300,cy=300;
+ [[colors.red,'0,0 0,240 240,240'],[colors.green,'0,0 240,0 240,240'],[colors.yellow,'240,0 240,240 480,240'],[colors.blue,'0,0 0,240 240,240']]; 
+ s.append(svgEl('rect',{x:240,y:240,width:120,height:120,fill:'#fff',stroke:'#fff','stroke-width':2}));
+ s.append(svgEl('polygon',{points:'240,240 360,240 300,300',fill:colors.green}));
+ s.append(svgEl('polygon',{points:'360,240 360,360 300,300',fill:colors.yellow}));
+ s.append(svgEl('polygon',{points:'360,360 240,360 300,300',fill:colors.blue}));
+ s.append(svgEl('polygon',{points:'240,360 240,240 300,300',fill:colors.red}));
+}
+function tokenPos(c,p,i){if(p===-1){let [r,x]=bases[c],spots=[[1,1],[1,4],[4,1],[4,4]],q=spots[i];return{x:(x+q[1])*40+20,y:(r+q[0])*40+20}}if(p>=52){let [r,x]=lanes[c][Math.min(5,p-52)];return coord(r,x)}let [r,x]=track[(starts[c]+p)%52];return coord(r,x)}
+function renderTokens(){
+ $('board').querySelectorAll('.token').forEach(e=>e.remove());
+ order.forEach(c=>game.tokens[c].forEach((p,i)=>{
+  let {x,y}=tokenPos(c,p,i),can=game.valid.some(v=>v.c===c&&v.i===i);
+  // slight offsets keep stacked tokens visible
+  let offsets=[[0,0],[-7,-7],[7,-7],[-7,7]];
+  let e=svgEl('circle',{cx:x+offsets[i][0],cy:y+offsets[i][1],r:12,fill:colors[c],class:'token'+(can?' valid':''),tabindex:can?'0':'-1','aria-label':names[c]+' token '+(i+1)});
+  if(can)e.addEventListener('click',()=>move(c,i));
+  $('board').append(e);
+ }));
+ updatePanel();
+}
+function showDie(n){
+ const d=$('die');
+ const positions=[[22,22],[66,22],[22,66],[66,66],[44,44],[22,44],[66,44]];
+ const faces={1:[4],2:[0,3],3:[0,4,3],4:[0,1,2,3],5:[0,1,2,3,4],6:[0,1,2,3,5,6]};
+ let dots='';
+ if(n){faces[n].forEach(i=>{const [x,y]=positions[i];dots+=`<circle cx="${x}" cy="${y}" r="7.2" fill="#171329"/>`})}
+ else {dots='<text x="44" y="51" text-anchor="middle" font-size="12" font-weight="800" fill="#777">ROLL</text>'}
+ d.innerHTML=`<svg viewBox="0 0 88 88" role="img" aria-label="${n?'Dice showing '+n:'Dice ready to roll'}"><rect x="2" y="2" width="84" height="84" rx="15" fill="#fff" stroke="#e4e4eb" stroke-width="2"/>${dots}</svg>`;
+}
+function updatePanel(){
+ let c=order[game.turn],h=isHuman(c);
+ $('turntitle').textContent=game.over?'Game finished':(h?'Your turn · ':'Computer · ')+names[c];
+ $('dot').style.background=colors[c];$('hint').textContent=game.over?'A team has won. Start the next game.':game.choosing?(h?'Tap a glowing token.':'Computer is choosing a move…'):(h?'Roll the dice.':'Computer is thinking…');
+ $('roll').disabled=game.over||game.choosing||!h||rolling;
+ showDie(game.dice);
+ $('teams').innerHTML='';
+ [[human(),'YOU'],[cpu(),'COMPUTER']].forEach(([cols,label])=>{let d=document.createElement('div');d.className='team';d.innerHTML='<b>'+label+'</b>'+cols.map(c=>'<span class="swatch" style="background:'+colors[c]+'"></span>'+names[c]+': '+game.tokens[c].filter(p=>p===57).length+'/4 home').join('<br>');$('teams').append(d)});
+}
+function message(t){$('message').textContent=t}
+function resetClock(){clearInterval(timer);seconds=30;clockPaint();timer=setInterval(()=>{if(game.over||rolling)return;seconds--;clockPaint();if(seconds<=0){clearInterval(timer);if(isHuman(order[game.turn])){message('Time is up. Your turn has been passed.');endTurn(false)}}},1000)}
+function clockPaint(){$('clock').textContent=seconds+'s';$('clock').classList.toggle('low',seconds<=8)}
+function validMoves(c){let a=[];game.tokens[c].forEach((p,i)=>{if((p===-1&&game.dice===6)||(p>=0&&p<57&&p+game.dice<=57))a.push({c,i})});return a}
+function endTurn(six){game.choosing=false;game.valid=[];if(!six)game.turn=(game.turn+1)%4;game.dice=null;resetClock();renderTokens();if(!game.over&&!isHuman(order[game.turn]))scheduleCPU()}
+let audioCtx=null;
+function diceSound(){
+ try{
+  const AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC)return;
+  if(!audioCtx)audioCtx=new AC();
+  if(audioCtx.state==='suspended')audioCtx.resume();
+  const ctx=audioCtx,now=ctx.currentTime;
+  // A short sequence of soft wooden/plastic dice rattles.
+  for(let i=0;i<7;i++){
+   const osc=ctx.createOscillator(),gain=ctx.createGain();
+   osc.type='triangle';
+   osc.frequency.setValueAtTime(520+Math.random()*420,now+i*.095);
+   osc.frequency.exponentialRampToValueAtTime(150+Math.random()*100,now+i*.095+.055);
+   gain.gain.setValueAtTime(.0001,now+i*.095);
+   gain.gain.exponentialRampToValueAtTime(.12,now+i*.095+.012);
+   gain.gain.exponentialRampToValueAtTime(.0001,now+i*.095+.07);
+   osc.connect(gain);gain.connect(ctx.destination);
+   osc.start(now+i*.095);osc.stop(now+i*.095+.08);
+  }
+ }catch(e){}
+}
+function animateDice(done){
+ rolling=true;$('roll').disabled=true;$('die').classList.add('rolling');diceSound();
+ let ticks=0;
+ const anim=setInterval(()=>{
+  showDie(1+Math.floor(Math.random()*6));ticks++;
+  if(ticks>=10){
+   clearInterval(anim);$('die').classList.remove('rolling');
+   const result=1+Math.floor(Math.random()*6);showDie(result);
+   rolling=false;done(result);
+  }
+ },95);
+}
+function rollDice(){
+ if(game.over||game.choosing||rolling||!isHuman(order[game.turn]))return;
+ animateDice(result=>{
+  let c=order[game.turn];game.dice=result;game.valid=validMoves(c);
+  if(!game.valid.length){message('You rolled '+game.dice+'. No legal move.');let six=game.dice===6;endTurn(six);return}
+  game.choosing=true;message('You rolled '+game.dice+'. Tap one of the glowing tokens.');renderTokens();resetClock();
+ });
+}
+function scheduleCPU(){
+ clearTimeout(cpuTimer);
+ cpuTimer=setTimeout(()=>{
+  if(game.over||game.choosing||isHuman(order[game.turn]))return;
+  const c=order[game.turn];
+  message('Computer is rolling…');
+  animateDice(result=>{
+   if(game.over||isHuman(order[game.turn]))return;
+   game.dice=result;game.valid=validMoves(c);
+   if(!game.valid.length){let six=game.dice===6;message('Computer rolled '+game.dice+'. No move available.');endTurn(six);return}
+   game.choosing=true;renderTokens();message('Computer rolled '+game.dice+' and is moving…');
+   setTimeout(()=>{
+    if(!game.choosing||game.over)return;
+    let choice=game.valid.slice().sort((a,b)=>score(b)-score(a))[0];
+    move(choice.c,choice.i);
+   },450);
+  });
+ },850);
+}
+function score(v){let p=game.tokens[v.c][v.i],dest=p===-1?0:p+game.dice,sc=Math.random();if(p===-1)sc+=15;if(dest===57)sc+=100;if(dest>=52)sc+=25;if(dest<52){let sq=(starts[v.c]+dest)%52;if(!safe.has(sq))order.filter(k=>k!==v.c).forEach(k=>game.tokens[k].forEach(op=>{if(op>=0&&op<52&&(starts[k]+op)%52===sq)sc+=60}))}return sc+dest*.1}
+async function move(c,i){if(!game.choosing||!game.valid.some(v=>v.c===c&&v.i===i))return;clearInterval(timer);let old=game.tokens[c][i],target=old===-1?0:old+game.dice,steps=old===-1?1:target-old;
+ for(let step=1;step<=steps;step++){game.tokens[c][i]=old===-1?0:old+step;renderTokens();await new Promise(r=>setTimeout(r,125))}
+ let hits=0;if(target<52){let sq=(starts[c]+target)%52;if(!safe.has(sq))order.filter(k=>k!==c).forEach(k=>game.tokens[k].forEach((op,j)=>{if(op>=0&&op<52&&(starts[k]+op)%52===sq){game.tokens[k][j]=-1;hits++}}))}
+ let won=human().every(k=>game.tokens[k].every(p=>p===57)),cpuWon=cpu().every(k=>game.tokens[k].every(p=>p===57));
+ if(won||cpuWon){game.over=true;game.choosing=false;game.valid=[];message((won?'You win!':'Computer wins!')+' All eight team tokens are home. Tap Next game to swap colours.');$('reset').textContent='Next game · swap colours';renderTokens();clearInterval(timer);return}
+ let six=game.dice===6;message((isHuman(c)?'You moved ':'Computer moved ')+names[c]+' token '+(hits?'and captured '+hits+' token(s). ':'')+(six?'You rolled a six — roll again.':'Next turn.'));endTurn(six)}
+$('roll').addEventListener('click',rollDice);
+$('reset').addEventListener('click',()=>{clearInterval(timer);clearTimeout(cpuTimer);if(game.over)swap=!swap;game=fresh();$('reset').textContent='↻ Restart game';message('New game! '+(swap?'You play Green + Blue. Computer plays Red + Yellow.':'You play Red + Yellow. Computer plays Green + Blue.'));resetClock();renderTokens();if(!isHuman(order[game.turn]))scheduleCPU()});
+game=fresh();drawBoard();showDie(0);resetClock();renderTokens();message('You play Red + Yellow. Computer plays Green + Blue. Roll the dice.');
+})();
+</script>
+</body></html>
